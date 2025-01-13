@@ -32,8 +32,12 @@ def extract_node_details(element):
         elif tag == "References":
             for reference in child:
                 if reference.tag.split('}')[-1] == "Reference":
-                    details["References"].append(reference.attrib)
+                    # Append both attributes and the text value of the reference
+                    reference_details = reference.attrib.copy()
+                    reference_details["Value"] = reference.text.strip() if reference.text else "N/A"
+                    details["References"].append(reference_details)
     return details
+
 
 def extract_value_content(value_element):
     """
@@ -386,9 +390,13 @@ def query_documents(collection, raw_nodes, query_text, n_results=5):
         return [], []
 
 file_path = input("Enter the path to your PDF or XML file: ")
+print("\nProcessing ...")
+
+
 
 # Process the file and get raw nodes
 collection, raw_nodes = process_file(file_path)
+print("\nProcessing Complete!")
 
 
 if __name__ == "__main__": 
@@ -428,6 +436,7 @@ if __name__ == "__main__":
                     print(f"NodeId: {node['node_id']}")
                     print(f"Description: {node['original_details'].get('Description', 'N/A')}")
                     print(f"DisplayName: {node['original_details'].get('DisplayName', 'N/A')}")
+                    print(f"References: {node['original_details'].get('References', 'N/A')}")
                     print(f"Value: {node['original_details'].get('Value', 'N/A')}")
                     print(f"Similarity Score: {node['similarity_score']:.4f}")
             else:
