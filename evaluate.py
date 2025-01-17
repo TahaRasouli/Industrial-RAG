@@ -11,6 +11,11 @@ from nltk.corpus import stopwords
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from main import *
+import pickle
+import hashlib
+from pathlib import Path
+
+
 
 # Download required NLTK data
 nltk.download('punkt')
@@ -260,6 +265,100 @@ def print_evaluation_summary(evaluation_results: Dict[int, List[EvaluationResult
         print(f"  Response Quality: {np.mean(avg_metrics['response_quality']):.4f}")
         print(f"  Combined Score: {np.mean(avg_metrics['combined']):.4f}")
 
+def get_cache_path(file_path: str) -> Path:
+    """
+    Generate a unique cache file path based on the input file path and its content hash
+    """
+    # Create cache directory if it doesn't exist
+    cache_dir = Path("cache")
+    cache_dir.mkdir(exist_ok=True)
+    
+    # Generate hash of file content to ensure cache invalidation if file changes
+    with open(file_path, 'rb') as f:
+        file_hash = hashlib.md5(f.read()).hexdigest()
+    
+    # Create cache filename using original filename and content hash
+    original_filename = Path(file_path).stem
+    cache_filename = f"{original_filename}_{file_hash}.pickle"
+    
+    return cache_dir / cache_filename
+
+def save_to_cache(file_path: str, collection, raw_nodes: Dict):
+    """
+    Save processed data to cache
+    """
+    cache_path = get_cache_path(file_path)
+    try:
+        # Convert ChromaDB collection to serializable format
+        collection_data = {
+            'documents': collection.get()
+        }
+        
+        cache_data = {
+            'collection_data': collection_data,
+            'raw_nodes': raw_nodes
+        }
+        
+        with open(cache_path, 'wb') as f:
+            pickle.dump(cache_data, f)
+        print(f"Cache saved to {cache_path}")
+    except Exception as e:
+        print(f"Error saving cache: {str(e)}")
+
+def load_from_cache(file_path: str) -> Tuple[Optional[Any], Optional[Dict]]:
+    """
+    Load processed data from cache if available
+    """
+    cache_path = get_cache_path(file_path)
+    if cache_path.exists():
+        try:
+            with open(cache_path, 'rb') as f:
+                cache_data = pickle.load(f)
+            
+            # Recreate ChromaDB collection from cached data
+            client = chromadb.Client()
+            collection = client.create_collection(
+                name="document_embeddings",
+                get_or_create=True
+            )
+            
+            # Restore collection data
+            collection_data = cache_data['collection_data']
+            if collection_data['documents']:
+                collection.add(
+                    documents=collection_data['documents']['documents'],
+                    metadatas=collection_data['documents']['metadatas'],
+                    ids=collection_data['documents']['ids']
+                )
+            
+            print("Loaded data from cache")
+            return collection, cache_data['raw_nodes']
+        except Exception as e:
+            print(f"Error loading cache: {str(e)}")
+            return None, None
+    return None, None
+
+def process_file_with_cache(file_path: str) -> Tuple[Any, Dict]:
+    """
+    Process file with caching functionality
+    """
+    # Try to load from cache first
+    collection, raw_nodes = load_from_cache(file_path)
+    
+    if collection is not None and raw_nodes is not None:
+        return collection, raw_nodes
+    
+    # If no cache available, process the file
+    print("No cache found or cache invalid. Processing file...")
+    collection, raw_nodes = process_file(file_path)
+    
+    # Save to cache for future use
+    if collection is not None and raw_nodes is not None:
+        save_to_cache(file_path, collection, raw_nodes)
+    
+    return collection, raw_nodes
+
+
 def main():
     # Initialize evaluator
     evaluator = EnhancedEvaluator()
@@ -267,7 +366,7 @@ def main():
     # Load and process document
     file_path = "./OPC2.xml"
     print("\nProcessing document...")
-    collection, raw_nodes = process_file(file_path)
+    collection, raw_nodes = process_file_with_cache(file_path)
     
     # Load test dataset
     dataset_path = "./queries_dataset.csv"
