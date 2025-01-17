@@ -398,46 +398,45 @@ print("\nProcessing ...")
 collection, raw_nodes = process_file(file_path)
 print("\nProcessing Complete!")
 
-
-if __name__ == "__main__": 
-    if collection:
-        # Query loop
-        while True:
-            user_query = input("\nEnter your query (type 'exit' to quit): ")
+# if __name__ == "__main__": 
+#     if collection:
+#         # Query loop
+#         while True:
+#             user_query = input("\nEnter your query (type 'exit' to quit): ")
             
-            if user_query.lower() == 'exit':
-                print("\nExiting the query system. Goodbye!")
-                break
+#             if user_query.lower() == 'exit':
+#                 print("\nExiting the query system. Goodbye!")
+#                 break
                 
-            results, similar_nodes = query_documents(collection, raw_nodes, user_query)
+#             results, similar_nodes = query_documents(collection, raw_nodes, user_query)
             
-            # Print RAG response first
-            if results and results[0]['rag_response']:
-                print("\nRAG Generated Answer:")
-                print(results[0]['rag_response'])
+#             # Print RAG response first
+#             if results and results[0]['rag_response']:
+#                 print("\nRAG Generated Answer:")
+#                 print(results[0]['rag_response'])
             
-            # Print vector DB results
-            print("\nVector Database Results:")
-            for i, result in enumerate(results, 1):
-                print(f"\nMatch {i}:")
-                print(f"Content: {result['content']}")
-                print(f"Source: {result['metadata']['source_type']}")
-                if result['metadata']['source_type'] == 'pdf':
-                    print(f"Page: {result['metadata']['page_number']}")
-                elif result['metadata']['source_type'] == 'xml':
-                    print(f"NodeId: {result['metadata']['NodeId']}")
+#             # Print vector DB results
+#             print("\nVector Database Results:")
+#             for i, result in enumerate(results, 1):
+#                 print(f"\nMatch {i}:")
+#                 print(f"Content: {result['content']}")
+#                 print(f"Source: {result['metadata']['source_type']}")
+#                 if result['metadata']['source_type'] == 'pdf':
+#                     print(f"Page: {result['metadata']['page_number']}")
+#                 elif result['metadata']['source_type'] == 'xml':
+#                     print(f"NodeId: {result['metadata']['NodeId']}")
             
-            # Print semantic similarity results
-            if similar_nodes:
-                print("\nTop Semantically Similar Nodes (Raw Content):")
-                for i, node in enumerate(similar_nodes, 1):
-                    print(f"\nSimilar Node {i}:")
-                    print("Raw Content:")
-                    print(f"NodeId: {node['node_id']}")
-                    print(f"Description: {node['original_details'].get('Description', 'N/A')}")
-                    print(f"DisplayName: {node['original_details'].get('DisplayName', 'N/A')}")
-                    print(f"References: {node['original_details'].get('References', 'N/A')}")
-                    print(f"Value: {node['original_details'].get('Value', 'N/A')}")
-                    print(f"Similarity Score: {node['similarity_score']:.4f}")
-            else:
-                print("\nNo semantic similarity results available for XML nodes.")
+#             # Print semantic similarity results
+#             if similar_nodes:
+#                 print("\nTop Semantically Similar Nodes (Raw Content):")
+#                 for i, node in enumerate(similar_nodes, 1):
+#                     print(f"\nSimilar Node {i}:")
+#                     print("Raw Content:")
+#                     print(f"NodeId: {node['node_id']}")
+#                     print(f"Description: {node['original_details'].get('Description', 'N/A')}")
+#                     print(f"DisplayName: {node['original_details'].get('DisplayName', 'N/A')}")
+#                     print(f"References: {node['original_details'].get('References', 'N/A')}")
+#                     print(f"Value: {node['original_details'].get('Value', 'N/A')}")
+#                     print(f"Similarity Score: {node['similarity_score']:.4f}")
+#             else:
+#                 print("\nNo semantic similarity results available for XML nodes.")
