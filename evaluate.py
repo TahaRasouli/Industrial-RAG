@@ -29,11 +29,18 @@ def load_test_dataset(csv_path: str) -> List[Tuple[str, str]]:
         # Read CSV file
         df = pd.read_csv(csv_path)
         
+        # Ensure both 'Query' and 'Answer' columns exist
+        if 'Query' not in df.columns or 'Answer' not in df.columns:
+            raise ValueError("The CSV must contain 'Query' and 'Answer' columns.")
+        
+        # Drop rows with missing values in 'Query' or 'Answer'
+        df = df.dropna(subset=['Query', 'Answer'])
+        
         # Convert DataFrame to list of tuples
-        test_data = list(zip(df['Query'].tolist(), df['Answer'].tolist()))
+        test_data = list(zip(df['Query'].astype(str), df['Answer'].astype(str)))
         
         # Filter out rows where the answer is "Not Found" as they won't be useful for evaluation
-        test_data = [(query, answer) for query, answer in test_data if answer != "Not Found"]
+        test_data = [(query, answer) for query, answer in test_data if answer.lower() != "not found"]
         
         print(f"Loaded {len(test_data)} valid test cases from dataset")
         return test_data
@@ -41,6 +48,7 @@ def load_test_dataset(csv_path: str) -> List[Tuple[str, str]]:
     except Exception as e:
         print(f"Error loading test dataset: {str(e)}")
         return []
+
 
 def calculate_similarity(response: str, true_label: str, model: SentenceTransformer) -> float:
     """
@@ -177,22 +185,23 @@ def print_evaluation_summary(evaluation_results: Dict[int, List[EvaluationResult
         print("-" * 50)
 
 if __name__ == "__main__":
-
+    # Load test dataset
     test_dataset = None
     while test_dataset is None:
-         dataset_path = input("Enter the path to your queries_dataset.csv file: ")
-         test_dataset = load_test_dataset(dataset_path) 
+        dataset_path = input("Enter the path to your queries_dataset.csv file: ")
+        test_dataset = load_test_dataset(dataset_path)
 
     # Load the document to be queried
     file_path = input("Enter the path to your PDF or XML file: ")
     print("\nProcessing document...")
     
     collection, raw_nodes = process_file(file_path)
-        
+    
     if test_dataset:
-            # Run evaluation
-         print("\nRunning evaluation...")
-         evaluation_results = evaluate_test_dataset(test_dataset, collection, raw_nodes)
-            
-            # Print results
-         print_evaluation_summary(evaluation_results)
+        # Run evaluation
+        print("\nRunning evaluation...")
+        evaluation_results = evaluate_test_dataset(test_dataset, collection, raw_nodes)
+        
+        # Print results
+        print_evaluation_summary(evaluation_results)
+
