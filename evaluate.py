@@ -46,35 +46,12 @@ class EnhancedEvaluator:
     def __init__(self, model_name: str = 'all-MiniLM-L6-v2'):
         self.model = SentenceTransformer(model_name)
         self.stop_words = set(stopwords.words('english'))
-        
+
     def preprocess_text(self, text: str) -> List[str]:
         """Preprocess text for BM25 scoring"""
         tokens = word_tokenize(text.lower())
         return [token for token in tokens if token not in self.stop_words]
-
-    def load_test_dataset(csv_path: str) -> List[Tuple[str, str]]:
-
-        try:
-
-        # Read CSV file
-            df = pd.read_csv(csv_path)
-
-        # Convert DataFrame to list of tuples
-            test_data = list(zip(df['Query'].tolist(), df['Answer'].tolist()))
-
-       
-
-        # Filter out rows where the answer is "Not Found" as they won't be useful for evaluation
-            test_data = [(query, answer) for query, answer in test_data if answer != "Not Found"]
-            print(f"Loaded {len(test_data)} valid test cases from dataset")
-            return test_data
-
-        except Exception as e:
-            print(f"Error loading test dataset: {str(e)}")
-            return []
-
-
-        
+    
     def calculate_semantic_similarity(self, text1: str, text2: str) -> float:
         """Calculate semantic similarity using embeddings"""
         embedding1 = self.model.encode([text1])[0]
@@ -244,6 +221,27 @@ class EnhancedEvaluator:
             )
             
         return evaluation_results
+
+def load_test_dataset(csv_path: str) -> List[Tuple[str, str]]:
+
+    try:
+
+    # Read CSV file
+        df = pd.read_csv(csv_path)
+
+    # Convert DataFrame to list of tuples
+        test_data = list(zip(df['Query'].tolist(), df['Answer'].tolist()))
+
+   
+
+    # Filter out rows where the answer is "Not Found" as they won't be useful for evaluation
+        test_data = [(query, answer) for query, answer in test_data if answer != "Not Found"]
+        print(f"Loaded {len(test_data)} valid test cases from dataset")
+        return test_data
+
+    except Exception as e:
+        print(f"Error loading test dataset: {str(e)}")
+        return []
 
 def print_evaluation_summary(evaluation_results: Dict[int, List[EvaluationResult]]):
     """Print comprehensive evaluation summary"""
@@ -417,3 +415,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
