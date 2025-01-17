@@ -389,16 +389,15 @@ def query_documents(collection, raw_nodes, query_text, n_results=5):
         print(f"Error querying documents: {str(e)}")
         return [], []
 
-file_path = input("Enter the path to your PDF or XML file: ")
-print("\nProcessing ...")
 
-
-
-# Process the file and get raw nodes
-collection, raw_nodes = process_file(file_path)
-print("\nProcessing Complete!")
 
 # if __name__ == "__main__": 
+#     file_path = input("Enter the path to your PDF or XML file: ")
+#     print("\nProcessing ...")
+    
+#     # Process the file and get raw nodes
+#     collection, raw_nodes = process_file(file_path)
+#     print("\nProcessing Complete!")
 #     if collection:
 #         # Query loop
 #         while True:
