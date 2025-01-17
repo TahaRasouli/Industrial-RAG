@@ -1,207 +1,297 @@
-from main import query_documents, process_file
-from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
-import pandas as pd
-import numpy as np
-from typing import List, Dict, Tuple
 from dataclasses import dataclass
+from typing import List, Dict, Tuple, Optional
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from rank_bm25 import BM25Okapi
+import numpy as np
+import pandas as pd
+from nltk.tokenize import word_tokenize
+import nltk
+from nltk.corpus import stopwords
+import xml.etree.ElementTree as ET
+from collections import defaultdict
+from main import *
+
+# Download required NLTK data
+nltk.download('punkt')
+nltk.download('stopwords')
+
+@dataclass
+class DetailedMetrics:
+    """Comprehensive evaluation metrics for a single query result"""
+    semantic_similarity: float
+    bm25_score: float
+    structural_similarity: Optional[float]  # Only for XML
+    relevance_score: float
+    response_quality: float
+    combined_score: float
 
 @dataclass
 class EvaluationResult:
-    """Class to store evaluation metrics for different k values"""
+    """Extended evaluation results for different k values"""
     k: int
     precision: float
     recall: float
     f1_score: float
-    cosine_similarity: float
-
-def load_test_dataset(csv_path: str) -> List[Tuple[str, str]]:
-    """
-    Load test dataset from CSV file
+    ndcg: float
+    mrr: float
+    detailed_metrics: List[DetailedMetrics]
     
-    Args:
-        csv_path: Path to the CSV file containing queries and answers
-    
-    Returns:
-        List of (query, answer) tuples
-    """
-    try:
-        # Read CSV file
-        df = pd.read_csv(csv_path)
+class EnhancedEvaluator:
+    def __init__(self, model_name: str = 'all-MiniLM-L6-v2'):
+        self.model = SentenceTransformer(model_name)
+        self.stop_words = set(stopwords.words('english'))
         
-        # Ensure both 'Query' and 'Answer' columns exist
-        if 'Query' not in df.columns or 'Answer' not in df.columns:
-            raise ValueError("The CSV must contain 'Query' and 'Answer' columns.")
+    def preprocess_text(self, text: str) -> List[str]:
+        """Preprocess text for BM25 scoring"""
+        tokens = word_tokenize(text.lower())
+        return [token for token in tokens if token not in self.stop_words]
         
-        # Drop rows with missing values in 'Query' or 'Answer'
-        df = df.dropna(subset=['Query', 'Answer'])
+    def calculate_semantic_similarity(self, text1: str, text2: str) -> float:
+        """Calculate semantic similarity using embeddings"""
+        embedding1 = self.model.encode([text1])[0]
+        embedding2 = self.model.encode([text2])[0]
+        return float(cosine_similarity([embedding1], [embedding2])[0][0])
         
-        # Convert DataFrame to list of tuples
-        test_data = list(zip(df['Query'].astype(str), df['Answer'].astype(str)))
+    def calculate_bm25_score(self, query: str, document: str) -> float:
+        """Calculate BM25 relevance score"""
+        tokenized_query = self.preprocess_text(query)
+        tokenized_doc = self.preprocess_text(document)
         
-        # Filter out rows where the answer is "Not Found" as they won't be useful for evaluation
-        test_data = [(query, answer) for query, answer in test_data if answer.lower() != "not found"]
+        # Create BM25 object with single document
+        bm25 = BM25Okapi([tokenized_doc])
+        return float(bm25.get_scores(tokenized_query)[0])
         
-        print(f"Loaded {len(test_data)} valid test cases from dataset")
-        return test_data
+    def calculate_structural_similarity(self, xml_node1: Dict, xml_node2: Dict) -> float:
+        """Calculate structural similarity for XML nodes"""
+        if not (xml_node1 and xml_node2):
+            return 0.0
+            
+        # Compare node attributes and structure
+        similarity_scores = []
         
-    except Exception as e:
-        print(f"Error loading test dataset: {str(e)}")
-        return []
-
-
-def calculate_similarity(response: str, true_label: str, model: SentenceTransformer) -> float:
-    """
-    Calculate cosine similarity between system response and true label
-    """
-    # Generate embeddings
-    response_embedding = model.encode([response])[0]
-    label_embedding = model.encode([true_label])[0]
-    
-    # Calculate cosine similarity
-    similarity = cosine_similarity([response_embedding], [label_embedding])[0][0]
-    return similarity
-
-def calculate_metrics(relevant_count: int, retrieved_count: int, true_positives: int) -> Tuple[float, float, float]:
-    """
-    Calculate precision, recall, and F1 score
-    """
-    precision = true_positives / retrieved_count if retrieved_count > 0 else 0
-    recall = true_positives / relevant_count if relevant_count > 0 else 0
-    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-    
-    return precision, recall, f1
-
-def evaluate_query_results(
-    query_results: List[Dict],
-    true_label: str,
-    k_values: List[int] = [1, 3, 5],
-    similarity_threshold: float = 0.7
-) -> Dict[int, EvaluationResult]:
-    """
-    Evaluate query results against true label for different k values
-    
-    Args:
-        query_results: List of results from query_documents function
-        true_label: The ground truth answer
-        k_values: List of k values to evaluate (default: [1, 3, 5])
-        similarity_threshold: Threshold for considering a match as relevant
-    
-    Returns:
-        Dictionary mapping k values to their evaluation metrics
-    """
-    # Initialize sentence transformer model
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    
-    evaluation_results = {}
-    
-    for k in k_values:
-        # Get top-k results
-        top_k_results = query_results[:k]
+        # Compare NodeIds
+        if xml_node1.get("NodeId") == xml_node2.get("NodeId"):
+            similarity_scores.append(1.0)
         
-        # Calculate similarity scores for each result
-        similarities = []
-        relevant_results = 0
+        # Compare References
+        refs1 = set(str(ref) for ref in xml_node1.get("References", []))
+        refs2 = set(str(ref) for ref in xml_node2.get("References", []))
+        if refs1 or refs2:
+            ref_similarity = len(refs1.intersection(refs2)) / len(refs1.union(refs2))
+            similarity_scores.append(ref_similarity)
+            
+        # Compare other attributes
+        for attr in ["DisplayName", "Description", "Value"]:
+            if xml_node1.get(attr) and xml_node2.get(attr):
+                attr_similarity = self.calculate_semantic_similarity(
+                    str(xml_node1[attr]), str(xml_node2[attr])
+                )
+                similarity_scores.append(attr_similarity)
+                
+        return np.mean(similarity_scores) if similarity_scores else 0.0
         
-        for result in top_k_results:
-            if 'rag_response' in result and result['rag_response']:
-                sim_score = calculate_similarity(result['rag_response'], true_label, model)
-                similarities.append(sim_score)
-                if sim_score >= similarity_threshold:
-                    relevant_results += 1
+    def calculate_ndcg(self, relevance_scores: List[float], k: int) -> float:
+        """Calculate Normalized Discounted Cumulative Gain"""
+        if not relevance_scores:
+            return 0.0
+            
+        dcg = 0
+        idcg = 0
+        sorted_relevance = sorted(relevance_scores, reverse=True)
         
-        # Calculate average similarity for top-k results
-        avg_similarity = np.mean(similarities) if similarities else 0
+        for i in range(min(k, len(relevance_scores))):
+            dcg += relevance_scores[i] / np.log2(i + 2)
+            idcg += sorted_relevance[i] / np.log2(i + 2)
+            
+        return dcg / idcg if idcg > 0 else 0.0
         
-        # Calculate metrics
-        precision, recall, f1 = calculate_metrics(
-            relevant_count=1,  # Since we have one true label
-            retrieved_count=k,
-            true_positives=relevant_results
+    def calculate_mrr(self, relevance_scores: List[float]) -> float:
+        """Calculate Mean Reciprocal Rank"""
+        for i, score in enumerate(relevance_scores, 1):
+            if score >= 0.5:  # Threshold for considering a result relevant
+                return 1.0 / i
+        return 0.0
+        
+    def evaluate_response_quality(self, response: str, true_label: str) -> float:
+        """Evaluate the quality of the RAG response"""
+        # Combine multiple metrics for response quality
+        semantic_sim = self.calculate_semantic_similarity(response, true_label)
+        bm25_score = self.calculate_bm25_score(true_label, response)
+        
+        # Normalize BM25 score to [0,1] range
+        normalized_bm25 = np.tanh(bm25_score)  # Using tanh for smooth normalization
+        
+        # Combine scores with weights
+        weights = {'semantic': 0.7, 'bm25': 0.3}
+        quality_score = (
+            weights['semantic'] * semantic_sim +
+            weights['bm25'] * normalized_bm25
         )
         
-        # Store results
-        evaluation_results[k] = EvaluationResult(
-            k=k,
-            precision=precision,
-            recall=recall,
-            f1_score=f1,
-            cosine_similarity=avg_similarity
-        )
-    
-    return evaluation_results
-
-def evaluate_test_dataset(
-    test_data: List[Tuple[str, str]],
-    collection,
-    raw_nodes: Dict,
-    k_values: List[int] = [1, 3, 5]
-) -> Dict[int, List[EvaluationResult]]:
-    """
-    Evaluate system performance on a test dataset
-    
-    Args:
-        test_data: List of (query, true_label) tuples
-        collection: Vector database collection
-        raw_nodes: Dictionary of raw node data
-        k_values: List of k values to evaluate
-    
-    Returns:
-        Dictionary mapping k values to lists of evaluation results
-    """
-    all_results = {k: [] for k in k_values}
-    
-    for query, true_label in test_data:
-        # Get system results for query
-        results, _ = query_documents(collection, raw_nodes, query)
+        return float(quality_score)
         
-        # Evaluate results
-        evaluation = evaluate_query_results(results, true_label, k_values)
+    def evaluate_query_results(
+        self,
+        query_results: List[Dict],
+        true_label: str,
+        query: str,
+        k_values: List[int] = [1, 3, 5]
+    ) -> Dict[int, EvaluationResult]:
+        """Evaluate query results against true label for different k values"""
+        evaluation_results = {}
         
-        # Store results
         for k in k_values:
-            all_results[k].append(evaluation[k])
-    
-    return all_results
+            top_k_results = query_results[:k]
+            detailed_metrics = []
+            relevance_scores = []
+            
+            for result in top_k_results:
+                # Calculate various similarity metrics
+                content = result.get('content', '')
+                response = result.get('rag_response', '')
+                
+                semantic_sim = self.calculate_semantic_similarity(content, true_label)
+                bm25_score = self.calculate_bm25_score(query, content)
+                
+                # Calculate structural similarity for XML nodes
+                structural_sim = None
+                if result.get('metadata', {}).get('source_type') == 'xml':
+                    structural_sim = self.calculate_structural_similarity(
+                        result.get('original_details', {}),
+                        {'Description': true_label}  # Simplified comparison
+                    )
+                
+                # Calculate response quality if RAG response exists
+                response_quality = (
+                    self.evaluate_response_quality(response, true_label)
+                    if response else 0.0
+                )
+                
+                # Calculate combined relevance score
+                weights = {
+                    'semantic': 0.4,
+                    'bm25': 0.3,
+                    'structural': 0.1,
+                    'response': 0.2
+                }
+                
+                relevance_score = (
+                    weights['semantic'] * semantic_sim +
+                    weights['bm25'] * bm25_score +
+                    weights['structural'] * (structural_sim or 0.0) +
+                    weights['response'] * response_quality
+                )
+                
+                relevance_scores.append(relevance_score)
+                
+                # Store detailed metrics
+                detailed_metrics.append(DetailedMetrics(
+                    semantic_similarity=semantic_sim,
+                    bm25_score=bm25_score,
+                    structural_similarity=structural_sim,
+                    relevance_score=relevance_score,
+                    response_quality=response_quality,
+                    combined_score=relevance_score
+                ))
+            
+            # Calculate traditional metrics
+            relevant_results = sum(1 for score in relevance_scores if score >= 0.5)
+            precision = relevant_results / k if k > 0 else 0
+            recall = relevant_results / 1  # Assuming one true label
+            f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+            
+            # Calculate NDCG and MRR
+            ndcg = self.calculate_ndcg(relevance_scores, k)
+            mrr = self.calculate_mrr(relevance_scores)
+            
+            evaluation_results[k] = EvaluationResult(
+                k=k,
+                precision=precision,
+                recall=recall,
+                f1_score=f1,
+                ndcg=ndcg,
+                mrr=mrr,
+                detailed_metrics=detailed_metrics
+            )
+            
+        return evaluation_results
 
 def print_evaluation_summary(evaluation_results: Dict[int, List[EvaluationResult]]):
-    """
-    Print summary of evaluation results
-    """
-    print("\nEvaluation Summary:")
-    print("=" * 50)
+    """Print comprehensive evaluation summary"""
+    print("\nEnhanced Evaluation Summary:")
+    print("=" * 70)
     
     for k, results in evaluation_results.items():
-        avg_precision = np.mean([r.precision for r in results])
-        avg_recall = np.mean([r.recall for r in results])
-        avg_f1 = np.mean([r.f1_score for r in results])
-        avg_similarity = np.mean([r.cosine_similarity for r in results])
-        
         print(f"\nTop-{k} Results:")
-        print(f"Average Precision: {avg_precision:.4f}")
-        print(f"Average Recall: {avg_recall:.4f}")
-        print(f"Average F1 Score: {avg_f1:.4f}")
-        print(f"Average Cosine Similarity: {avg_similarity:.4f}")
-        print("-" * 50)
+        print("-" * 70)
+        
+        # Calculate averages for all metrics
+        avg_metrics = defaultdict(list)
+        for result in results:
+            avg_metrics['precision'].append(result.precision)
+            avg_metrics['recall'].append(result.recall)
+            avg_metrics['f1'].append(result.f1_score)
+            avg_metrics['ndcg'].append(result.ndcg)
+            avg_metrics['mrr'].append(result.mrr)
+            
+            # Detailed metrics
+            for detailed in result.detailed_metrics:
+                avg_metrics['semantic_sim'].append(detailed.semantic_similarity)
+                avg_metrics['bm25'].append(detailed.bm25_score)
+                if detailed.structural_similarity is not None:
+                    avg_metrics['structural'].append(detailed.structural_similarity)
+                avg_metrics['response_quality'].append(detailed.response_quality)
+                avg_metrics['combined'].append(detailed.combined_score)
+        
+        # Print averaged results
+        print(f"Traditional Metrics:")
+        print(f"  Precision: {np.mean(avg_metrics['precision']):.4f}")
+        print(f"  Recall: {np.mean(avg_metrics['recall']):.4f}")
+        print(f"  F1 Score: {np.mean(avg_metrics['f1']):.4f}")
+        print(f"  NDCG: {np.mean(avg_metrics['ndcg']):.4f}")
+        print(f"  MRR: {np.mean(avg_metrics['mrr']):.4f}")
+        
+        print("\nDetailed Metrics:")
+        print(f"  Semantic Similarity: {np.mean(avg_metrics['semantic_sim']):.4f}")
+        print(f"  BM25 Score: {np.mean(avg_metrics['bm25']):.4f}")
+        if avg_metrics['structural']:
+            print(f"  Structural Similarity: {np.mean(avg_metrics['structural']):.4f}")
+        print(f"  Response Quality: {np.mean(avg_metrics['response_quality']):.4f}")
+        print(f"  Combined Score: {np.mean(avg_metrics['combined']):.4f}")
 
-if __name__ == "__main__":
-    # Load test dataset
-    test_dataset = None
-    while test_dataset is None:
-        dataset_path = input("Enter the path to your queries_dataset.csv file: ")
-        test_dataset = load_test_dataset(dataset_path)
-
-    # Load the document to be queried
-    file_path = input("Enter the path to your PDF or XML file: ")
-    print("\nProcessing document...")
+def main():
+    # Initialize evaluator
+    evaluator = EnhancedEvaluator()
     
+    # Load and process document
+    file_path = "./OPC2.xml"
+    print("\nProcessing document...")
     collection, raw_nodes = process_file(file_path)
     
-    if test_dataset:
-        # Run evaluation
-        print("\nRunning evaluation...")
-        evaluation_results = evaluate_test_dataset(test_dataset, collection, raw_nodes)
+    # Load test dataset
+    dataset_path = "./queries_dataset.csv"
+    test_data = load_test_dataset(dataset_path)
+    
+    if test_data:
+        print("\nRunning enhanced evaluation...")
+        all_results = defaultdict(list)
         
-        # Print results
-        print_evaluation_summary(evaluation_results)
+        for query, true_label in test_data:
+            # Get system results
+            results, _ = query_documents(collection, raw_nodes, query)
+            
+            # Evaluate results
+            evaluation = evaluator.evaluate_query_results(results, true_label, query)
+            
+            # Store results
+            for k, result in evaluation.items():
+                all_results[k].append(result)
+        
+        # Print comprehensive results
+        print_evaluation_summary(all_results)
+    else:
+        print("No valid test cases found in the dataset.")
 
+if __name__ == "__main__":
+    main()
