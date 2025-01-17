@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Any
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from rank_bm25 import BM25Okapi
@@ -51,6 +51,29 @@ class EnhancedEvaluator:
         """Preprocess text for BM25 scoring"""
         tokens = word_tokenize(text.lower())
         return [token for token in tokens if token not in self.stop_words]
+
+    def load_test_dataset(csv_path: str) -> List[Tuple[str, str]]:
+
+        try:
+
+        # Read CSV file
+            df = pd.read_csv(csv_path)
+
+        # Convert DataFrame to list of tuples
+            test_data = list(zip(df['Query'].tolist(), df['Answer'].tolist()))
+
+       
+
+        # Filter out rows where the answer is "Not Found" as they won't be useful for evaluation
+            test_data = [(query, answer) for query, answer in test_data if answer != "Not Found"]
+            print(f"Loaded {len(test_data)} valid test cases from dataset")
+            return test_data
+
+        except Exception as e:
+            print(f"Error loading test dataset: {str(e)}")
+            return []
+
+
         
     def calculate_semantic_similarity(self, text1: str, text2: str) -> float:
         """Calculate semantic similarity using embeddings"""
