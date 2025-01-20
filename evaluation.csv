@@ -1,0 +1,59 @@
+Query,Answer,Sys-1,Sim-1,Sys-3,Sim-3,Sys-5,Sim-5
+What is the name of the operator managing the job?,Not Found,"There is no operator mentioned in the provided context, so I cannot answer the query with a specific name. The context only provides information about a node and its references, but does not mention an operator.","
+Top Semantically Similar Nodes (Raw Content):
+
+Similar Node 1:
+Raw Content:
+NodeId: ns=1;i=5044
+Description: None
+DisplayName: Identification
+References: [{'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6080'}, {'ReferenceType': 'HasComponent', 'IsForward': 'false', 'Value': 'ns=1;i=1009'}, {'ReferenceType': 'HasTypeDefinition', 'Value': 'ns=2;i=1005'}, {'ReferenceType': 'HasModellingRule', 'Value': 'i=78'}, {'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6081'}, {'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6082'}]
+Value: None
+Similarity Score: 0.1619
+
+Similar Node 2:
+Raw Content:
+NodeId: ns=1;i=1009
+Description: None
+DisplayName: ExampleComponentType
+References: [{'ReferenceType': 'HasSubtype', 'IsForward': 'false', 'Value': 'i=58'}, {'ReferenceType': 'HasComponent', 'Value': 'ns=1;i=5044'}]
+Value: None
+Similarity Score: 0.1355","Based on the provided context, there is no information about an operator managing a job. The context appears to be discussing nodes and their relationships in a particular system, but does not mention anyone or any entity performing a job or operation.","
+Top Semantically Similar Nodes (Raw Content):
+
+Similar Node 1:
+Raw Content:
+NodeId: ns=1;i=5044
+Description: None
+DisplayName: Identification
+References: [{'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6080'}, {'ReferenceType': 'HasComponent', 'IsForward': 'false', 'Value': 'ns=1;i=1009'}, {'ReferenceType': 'HasTypeDefinition', 'Value': 'ns=2;i=1005'}, {'ReferenceType': 'HasModellingRule', 'Value': 'i=78'}, {'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6081'}, {'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6082'}]
+Value: None
+Similarity Score: 0.1619
+
+Similar Node 2:
+Raw Content:
+NodeId: ns=1;i=1009
+Description: None
+DisplayName: ExampleComponentType
+References: [{'ReferenceType': 'HasSubtype', 'IsForward': 'false', 'Value': 'i=58'}, {'ReferenceType': 'HasComponent', 'Value': 'ns=1;i=5044'}]
+Value: None
+Similarity Score: 0.1355","I've analyzed the provided context, but I don't see any information related to a job or an operator managing a job. The context appears to be describing nodes and their properties in a system, but it doesn't mention a job or an operator. If you'd like to provide more context or rephrase the query, I'd be happy to try and assist you!","
+Top Semantically Similar Nodes (Raw Content):
+
+Similar Node 1:
+Raw Content:
+NodeId: ns=1;i=5044
+Description: None
+DisplayName: Identification
+References: [{'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6080'}, {'ReferenceType': 'HasComponent', 'IsForward': 'false', 'Value': 'ns=1;i=1009'}, {'ReferenceType': 'HasTypeDefinition', 'Value': 'ns=2;i=1005'}, {'ReferenceType': 'HasModellingRule', 'Value': 'i=78'}, {'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6081'}, {'ReferenceType': 'HasProperty', 'Value': 'ns=1;i=6082'}]
+Value: None
+Similarity Score: 0.1619
+
+Similar Node 2:
+Raw Content:
+NodeId: ns=1;i=1009
+Description: None
+DisplayName: ExampleComponentType
+References: [{'ReferenceType': 'HasSubtype', 'IsForward': 'false', 'Value': 'i=58'}, {'ReferenceType': 'HasComponent', 'Value': 'ns=1;i=5044'}]
+Value: None
+Similarity Score: 0.1355"
