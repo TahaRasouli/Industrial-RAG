@@ -20,10 +20,10 @@ for idx, q in enumerate(df["Query"]):
             output_data = []
             output_data.append("\nTop Semantically Similar Nodes (Raw Content):")
             for i, node in enumerate(similar_nodes, 1):
-                output_data.append(f"\nSimilar Node {i}: DisplayName: {node['original_details'].get('DisplayName', 'N/A')},
-                                    References: {node['original_details'].get('References', 'N/A')},
-                                    Value: {node['original_details'].get('Value', 'N/A')}")
-                df.loc[idx, "Sim-1"] = df.loc[idx, "Sim-1"] = "\n".join(output_data)
+                output_data.append(f"\nSimilar Node {i}: DisplayName: {node['original_details'].get('DisplayName', 'N/A')}, "
+                                   f"References: {node['original_details'].get('References', 'N/A')}, "
+                                   f"Value: {node['original_details'].get('Value', 'N/A')}")
+            df.loc[idx, "Sim-1"] = "\n".join(output_data)
     else:
         output_data.append("\nNo semantic similarity results available for XML nodes.")
         df.loc[idx, "Sim-1"] = "\n".join(output_data)
@@ -39,13 +39,13 @@ for idx, q in enumerate(df["Query"]):
             output_data = []
             output_data.append("\nTop Semantically Similar Nodes (Raw Content):")
             for i, node in enumerate(similar_nodes, 1):
-                output_data.append(f"\nSimilar Node {i}: DisplayName: {node['original_details'].get('DisplayName', 'N/A')},
-                                    References: {node['original_details'].get('References', 'N/A')},
-                                    Value: {node['original_details'].get('Value', 'N/A')}")
-                df.loc[idx, "Sim-3"] = "\n".join(output_data)
+                output_data.append(f"\nSimilar Node {i}: DisplayName: {node['original_details'].get('DisplayName', 'N/A')}, "
+                                   f"References: {node['original_details'].get('References', 'N/A')}, "
+                                   f"Value: {node['original_details'].get('Value', 'N/A')}")
+            df.loc[idx, "Sim-3"] = "\n".join(output_data)
     else:
         output_data.append("\nNo semantic similarity results available for XML nodes.")
-        df.loc[idx, "Sim-3"] = df.loc[idx, "Sim-1"] = "\n".join(output_data)
+        df.loc[idx, "Sim-3"] = "\n".join(output_data)
 
 
 for idx, q in enumerate(df["Query"]):
@@ -58,10 +58,10 @@ for idx, q in enumerate(df["Query"]):
             output_data = []
             output_data.append("\nTop Semantically Similar Nodes (Raw Content):")
             for i, node in enumerate(similar_nodes, 1):
-                output_data.append(f"\nSimilar Node {i}: DisplayName: {node['original_details'].get('DisplayName', 'N/A')},
-                                    References: {node['original_details'].get('References', 'N/A')},
-                                    Value: {node['original_details'].get('Value', 'N/A')}")
-                df.loc[idx, "Sim-5"] = "\n".join(output_data)
+                output_data.append(f"\nSimilar Node {i}: DisplayName: {node['original_details'].get('DisplayName', 'N/A')}, "
+                                   f"References: {node['original_details'].get('References', 'N/A')}, "
+                                   f"Value: {node['original_details'].get('Value', 'N/A')}")
+            df.loc[idx, "Sim-5"] = "\n".join(output_data)
     else:
         output_data.append("\nNo semantic similarity results available for XML nodes.")
         df.loc[idx, "Sim-5"] = "\n".join(output_data)
