@@ -1,108 +1,101 @@
 Query,Answer
-What is the name of the operator managing the job?,Not Found
-What is the job identifier for the active program?,Job 41241
-How many runs are planned for the job?,1
-What is the predicted time for maintenance?,1/1/1970 0:00
-What is the current operation mode of the machine tool?,1
-What is the process irregularity of Part 2?,2
-Where is the tool load location?,Magazine 2
-What is the part name loaded in the workspace left?,Circle
-What is the power-on duration of the machine tool?,11
-What is the identifier for MyJob 1?,MyJob 1
-Does PartSet 1 contain mixed parts?,FALSE
-What is the quality of Part 4?,4
-What is the predicted time for ToolChange?,1/1/1970 0:00
-Where is the ToolUnload location?,Magazine 3
-What is the utility name for UtilityChange?,H²
-What is the predicted time for UtilityChange?,1/1/1970 0:00
-What is the node ID for JobNodeId in the active program?,ns=14;i=60270
-What is the current state of MyJob 1?,Not Found
-What is the stacklight mode?,0
-What is the signal color of Light 0?,1
-What is the signal mode of Light 1?,0
-What is the power-on duration of the MachineTool?,11
-What is the process irregularity of Part 5?,1
-What is the temperature of the production environment?,Not Found
-How many parts are completed per run in Set1?,3
-How many parts are planned per run in Set1?,5
-What is the expected life of the current tool?,Not Found
-What is the name of Light 1 in the stacklight?,Light 1
-What is the predicted time for PartLoad?,1/1/1970 0:00
-What is the name of Part 3?,Part 3
-What is the state of the machine?,Running
-What is the job identifier for the active program?,Job 41241
-How many runs are planned for the job?,1
-What is the predicted time for maintenance?,1/1/1970 0:00
-What is the current operation mode of the machine tool?,1
-What is the process irregularity of Part 2?,2
-Where is the tool load location?,Magazine 2
-What is the part name loaded in the workspace left?,Circle
-What is the power-on duration of the machine tool?,11
-What is the identifier for MyJob 1?,MyJob 1
-Does PartSet 1 contain mixed parts?,FALSE
-What is the quality of Part 4?,4
-What is the predicted time for ToolChange?,1/1/1970 0:00
-Where is the ToolUnload location?,Magazine 3
-What is the utility name for UtilityChange?,H²
-What is the predicted time for UtilityChange?,1/1/1970 0:00
-What is the identifier for JobNodeId in the active program?,ns=14;i=60270
-What is the current state of MyJob 1?,
-What is the stacklight mode?,0
-What is the signal color of Light 0?,1
-What is the signal mode of Light 1?,0
-What is the power-on duration of the MachineTool?,11
-What is the process irregularity of Part 5?,1
-What is the state of production?,
-How many parts are completed per run in Set1?,3
-How many parts are planned per run in Set1?,5
-What is the current state of PartUnLoad?,
-What is the name of Light 1 in the stacklight?,Light 1
-What is the predicted time for PartLoad?,1/1/1970 0:00
-What is the name of Part 3?,Part 3
-What is the material type for Part 3?,Not Found
-What is the total production duration for the active program?,Not Found
-Who is assigned to the current production job?,Not Found
-What is the power usage of the stacklight?,Not Found
-What is the energy consumption of the machine?,Not Found
-What is the maintenance cost of the actuator replacement?,Not Found
-What is the efficiency of the machine tool during active operation?,Not Found
-What is the expected life of the current tool?,Not Found
-What is the temperature of the production environment?,Not Found
-What is the name of the operator managing the job?,Not Found
-What is the material type for Part 3?,Not Found
-What is the total production duration for the active program?,Not Found
-Who is assigned to the current production job?,Not Found
-What is the power usage of the stacklight?,Not Found
-What is the energy consumption of the machine?,Not Found
-What is the maintenance cost of the actuator replacement?,Not Found
-What is the efficiency of the machine tool during active operation?,Not Found
-What is the expected life of the current tool?,Not Found
-What is the temperature of the production environment?,Not Found
-What is the name of the operator managing the job?,Not Found
-What is the material type for Part 3?,Not Found
-What is the total production duration for the active program?,Not Found
-Who is assigned to the current production job?,Not Found
-What is the power usage of the stacklight?,Not Found
-What is the energy consumption of the machine?,Not Found
-What is the maintenance cost of the actuator replacement?,Not Found
-What is the efficiency of the machine tool during active operation?,Not Found
-What is the expected life of the current tool?,Not Found
-What is the temperature of the production environment?,Not Found
-What is the name of the operator managing the job?,Not Found
-What is the material type for Part 3?,Not Found
-What is the total production duration for the active program?,Not Found
-Who is assigned to the current production job?,Not Found
-What is the power usage of the stacklight?,Not Found
-What is the energy consumption of the machine?,Not Found
-What is the maintenance cost of the actuator replacement?,Not Found
-What is the efficiency of the machine tool during active operation?,Not Found
-What is the expected life of the current tool?,Not Found
-What is the temperature of the production environment?,Not Found
-What is the name of the operator managing the job?,Not Found
-What is the material type for Part 3?,Not Found
-What is the total production duration for the active program?,Not Found
-Who is assigned to the current production job?,Not Found
-What is the power usage of the stacklight?,Not Found
-What is the energy consumption of the machine?,Not Found
-What is the maintenance cost of the actuator replacement?,Not Found
-What is the efficiency of the machine tool during active operation?,Not Found
+What is the value for PartUnLoad?,
+What is the value for Light 0?,
+What is the value for ToolUnLoad?,
+What is the NodeId for FullMachineToolDynamic?,ns=5;i=66382
+What is the value for Monitoring?,
+What is the value for Set1?,
+What is the value for ArchivedRecord?,
+What is the value for SoftwareIdentification?,
+What is the value for Name?,Full Program
+What is the value for NodeVersion?,2025-01-03T16:07:04Z
+What is the value for PartLoad?,
+What is the value for UnreferencedObject?,
+What is the value for JobNodeId?,
+What is the value for UnreferencedObject?,
+What is the value for UnknownEventSource?,
+What is the value for Part 3?,
+What is the value for UnusedSetting?,
+What is the value for Channel 3?,
+What is the value for Tool1?,
+What is the value for ExpiredTool?,
+What is the value for UnusedSetting?,
+What is the value for Equipment?,
+What is the value for UnloggedEvent?,
+What is the value for HiddenLight?,
+What is the value for ProcessChangeover?,
+What is the value for Part 4?,
+What is the value for State?,
+What is the value for Id?,
+What is the value for ToolLife?,
+What is the value for ExpiredTool?,
+What is the value for Prognoses?,
+What is the NodeId for State?,ns=5;i=58636
+What is the value for UnknownEventSource?,
+What is the value for State?,
+What is the value for Multi 1?,
+What is the NodeId for State?,ns=5;i=58826
+What is the value for HiddenLight?,
+What is the value for ToolLife?,
+What is the value for Spindle 1?,
+What is the value for Channel 2?,
+What is the NodeId for PartSets?,ns=5;i=58835
+What is the value for MissingDataPoint?,
+What is the value for ToolLife?,
+What is the value for MachineTool?,
+What is the value for UnknownEventSource?,
+What is the value for MyJob 1?,
+What is the value for ProductionPlan?,
+What is the value for PartSets?,
+What is the value for Part 5?,
+What is the value for InvisibleComponent?,
+What is the value for Stacklight?,
+What is the value for OS?,
+What is the NodeId for MyJob 1?,ns=5;i=58824
+What is the value for PhantomSensor?,
+What is the value for Number?,
+What is the value for SubTool 2?,
+What is the NodeId for Messages?,ns=5;i=58861
+What is the value for ToolLoad?,
+What is the NodeId for Production?,ns=5;i=58634
+What is the value for CurrentState?,
+What is the NodeId for ProductionPlan?,ns=5;i=58822
+What is the value for Channel 1?,
+What is the value for UtilityChange?,
+What is the value for Manual?,
+What is the value for JobIdentifier?,Job 41241
+What is the value for Tools?,
+What is the value for UnusedSetting?,
+What is the value for ActiveProgram?,
+What is the value for UnknownState?,
+What is the value for Part 2?,
+What is the value for UnreferencedObject?,
+What is the value for UntrackedJob?,
+What is the value for InvisibleComponent?,
+What is the value for SubTool 1?,
+What is the value for Identification?,
+What is the value for ToolChange?,
+What is the value for Laser?,
+What is the value for ProductionPrograms?,
+What is the value for Channel 4?,
+What is the value for SubTool 0?,
+What is the value for ObsoleteEntry?,
+What is the value for PartsPerRun?,
+What is the value for FullMachineToolDynamic?,
+What is the value for Light 3?,
+What is the NodeId for ActiveProgram?,ns=5;i=58635
+What is the value for Messages?,
+What is the value for ProductionJobEnd?,
+What is the value for Notification?,
+What is the value for UnknownState?,
+What is the value for Maintenance?,
+What is the value for Part 1?,
+What is the value for EDM?,
+What is the value for NumberInList?,
+What is the value for PhantomSensor?,
+What is the NodeId for ProductionPrograms?,ns=5;i=58825
+What is the value for Production?,
+What is the value for ToolLife?,
+What is the value for Light 1?,
+What is the value for UnknownEventSource?,
+What is the value for Light 2?,
