@@ -3,10 +3,10 @@ import pandas as pd
 from main import *
 
 print("Processing the file ...")
-collection, raw_nodes = process_file("sample.xml")
+collection, raw_nodes = process_file("OPC2.xml")
 print("Processing complete!!!")
 
-df = pd.read_csv('sample.csv')
+df = pd.read_csv('queries_dataset.csv')
 
 def process_queries(df, n_results):
     sys_col = f"Sys-{n_results}"
