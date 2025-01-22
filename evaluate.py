@@ -3,10 +3,10 @@ import pandas as pd
 from main import *
 
 print("Processing the file ...")
-collection, raw_nodes = process_file("OPC2.xml")
+collection, raw_nodes = process_file("sample.xml")
 print("Processing complete!!!")
 
-df = pd.read_csv('queries_dataset.csv')
+df = pd.read_csv('sample.csv')
 
 def process_queries(df, n_results):
     sys_col = f"Sys-{n_results}"
@@ -26,11 +26,12 @@ def process_queries(df, n_results):
             # Only take the first n_results nodes
             for i, node in enumerate(similar_nodes[:n_results], 1):
                 node_info = (
-                    f"\nSimilar Node {i}: NodeId: {node['node_id']}, 
-                    DisplayName: {node['original_details'].get('DisplayName', 'N/A')}, 
-                    References: {node['original_details'].get('References', 'N/A')}, 
-                    Value: {node['original_details'].get('Value', 'N/A')}"
-                )
+                f"\nSimilar Node {i}: NodeId: {node['node_id']}, "
+                f"DisplayName: {node['original_details'].get('DisplayName', 'N/A')}, "
+                f"References: {node['original_details'].get('References', 'N/A')}, "
+                f"Value: {node['original_details'].get('Value', 'N/A')}"
+                             )
+
                 output_data.append(node_info)
         else:
             output_data.append("No semantic similarity results available for XML nodes.")
