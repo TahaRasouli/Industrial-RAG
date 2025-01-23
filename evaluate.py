@@ -9,39 +9,23 @@ print("Processing complete!!!")
 df = pd.read_csv('queries_dataset.csv')
 
 def process_queries(df, n_results):
-    sys_col = f"Sys-{n_results}"
-    sim_col = f"Sim-{n_results}"
-    
-    for idx, q in enumerate(df["Query"]):
-        results, similar_nodes = query_documents(collection, raw_nodes, q, n_results=n_results)
-        
-        # Process RAG response
-        if results and results[0]['rag_response']:
-            df.loc[idx, sys_col] = results[0]['rag_response']
-        
-        # Process similar nodes
-        output_data = []
-        if similar_nodes and len(similar_nodes) > 0:
-            output_data.append("Top Semantically Similar Nodes (Raw Content):")
-            # Only take the first n_results nodes
-            for i, node in enumerate(similar_nodes[:n_results], 1):
-                node_info = (
-                f"\nSimilar Node {i}: NodeId: {node['node_id']}, "
-                f"DisplayName: {node['original_details'].get('DisplayName', 'N/A')}, "
-                f"References: {node['original_details'].get('References', 'N/A')}, "
-                f"Value: {node['original_details'].get('Value', 'N/A')}"
-                             )
-
-                output_data.append(node_info)
-        else:
-            output_data.append("No semantic similarity results available for XML nodes.")
-        
-        df.loc[idx, sim_col] = "\n".join(output_data)
-        print(f"Processed query {idx+1} for {sys_col} and {sim_col}")
+    df[f"Sys-{n_results}"] = [
+        {
+            f'matches': [
+                {
+                    'rank': idx + 1,
+                    'content': result['content'],
+                    'node_id': result['metadata']['NodeId'] if result['metadata']['source_type'] == 'xml' else None
+                }
+                for idx, result in enumerate(query_documents(collection, raw_nodes, q, n_results=n_results)[0])
+            ]
+        }
+        for q in df["Query"]
+    ]
+    return df
 
 # Process for different n_results
-for n in [1, 3, 5]:
+for n in [3, 5]:
     print(f"\nProcessing queries with n_results={n}")
-    process_queries(df, n)
-
-df.to_csv("./evaluation.csv", index=False)
+    df = process_queries(df, n)
+    df.to_csv(f"./evaluation_{n}.csv", index=False)

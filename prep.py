@@ -8,6 +8,10 @@ from chromadb.utils import embedding_functions
 import PyPDF2
 import re
 import numpy as np
+import pandas as pd
+import csv
+import time
+from datetime import datetime
 
 # Original XML processing functions remain unchanged
 def extract_node_details(element):
@@ -389,54 +393,76 @@ def query_documents(collection, raw_nodes, query_text, n_results=5):
         print(f"Error querying documents: {str(e)}")
         return [], []
 
-
-
-if __name__ == "__main__": 
-    file_path = input("Enter the path to your PDF or XML file: ")
-    print("\nProcessing ...")
+def evaluate_queries(queries_df, collection, raw_nodes):
+    results = []
+    call_count = 0
     
-    # Process the file and get raw nodes
-    collection, raw_nodes = process_file(file_path)
-    print("\nProcessing Complete!")
+    for idx, row in queries_df.iterrows():
+        query = row['Query']
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{current_time}] Processing query {idx + 1}/{len(queries_df)}: {query}")
+        
+        # Rate limiting
+        if call_count >= 1000:
+            print(f"[{current_time}] Reached 1000 calls. Resting for 1 minute...")
+            time.sleep(60)
+            call_count = 0
+        
+        vector_results, similar_nodes = query_documents(collection, raw_nodes, query)
+        call_count += 1  # Increment for RAG call
+        
+        sys_1 = vector_results[0]['rag_response'] if vector_results and vector_results[0]['rag_response'] else ''
+        
+        sys_3 = []
+        sys_5 = []
+        for i, result in enumerate(vector_results[:5]):
+            result_str = f"Content: {result['content']}, NodeId: {result['metadata'].get('NodeId', 'N/A')}"
+            if i < 3:
+                sys_3.append(result_str)
+            sys_5.append(result_str)
+        
+        sim_1 = ''
+        sim_3 = []
+        sim_5 = []
+        
+        for i, node in enumerate(similar_nodes[:5]):
+            node_str = (f"NodeId: {node['node_id']}, Description: {node['original_details'].get('Description', 'N/A')}, "
+                       f"DisplayName: {node['original_details'].get('DisplayName', 'N/A')}, "
+                       f"Value: {node['original_details'].get('Value', 'N/A')}, "
+                       f"Score: {node['similarity_score']:.4f}")
+            
+            if i == 0:
+                sim_1 = node_str
+            if i < 3:
+                sim_3.append(node_str)
+            sim_5.append(node_str)
+        
+        results.append({
+            'Query': query,
+            'Answer': row['Answer'],
+            'Sys-1': sys_1,
+            'Sys-3': ' | '.join(sys_3),
+            'Sys-5': ' | '.join(sys_5),
+            'Sim-1': sim_1,
+            'Sim-3': ' | '.join(sim_3),
+            'Sim-5': ' | '.join(sim_5)
+        })
+    
+    return pd.DataFrame(results)
+
+def run_evaluation(queries_file, output_file):
+    print(f"Loading queries from {queries_file}")
+    queries_df = pd.read_csv(queries_file)
+    
+    print("Processing input file...")
+    collection, raw_nodes = process_file('OPC2.xml')
+    
     if collection:
-        # Query loop
-        while True:
-            user_query = input("\nEnter your query (type 'exit' to quit): ")
+        print("Starting evaluation...")
+        results_df = evaluate_queries(queries_df, collection, raw_nodes)
+        results_df.to_csv(output_file, index=False)
+        print(f"Evaluation complete. Results saved to {output_file}")
+    else:
+        print("Error processing input file")
 
-            if user_query.lower() == 'exit':
-                print("\nExiting the query system. Goodbye!")
-                break
-
-            results, similar_nodes = query_documents(collection, raw_nodes, user_query)
-
-            # Print RAG response first
-            if results and results[0]['rag_response']:
-                print("\nRAG Generated Answer:")
-                print(results[0]['rag_response'])
-
-            # Print vector DB results
-            print("\nVector Database Results:")
-            for i, result in enumerate(results, 1):
-                print(f"\nMatch {i}:")
-                print(f"Content: {result['content']}")
-                print(f"Source: {result['metadata']['source_type']}")
-                if result['metadata']['source_type'] == 'pdf':
-                    print(f"Page: {result['metadata']['page_number']}")
-                elif result['metadata']['source_type'] == 'xml':
-                    print(f"NodeId: {result['metadata']['NodeId']}")
-
-            # Print semantic similarity results
-            if similar_nodes:
-                print("\nTop Semantically Similar Nodes (Raw Content):")
-                for i, node in enumerate(similar_nodes, 1):
-                    print(f"\nSimilar Node {i}:")
-                    print("Raw Content:")
-                    print(f"NodeId: {node['node_id']}")
-                    print(f"Description: {node['original_details'].get('Description', 'N/A')}")
-                    print(f"DisplayName: {node['original_details'].get('DisplayName', 'N/A')}")
-                    print(f"References: {node['original_details'].get('References', 'N/A')}")
-                    print(f"Value: {node['original_details'].get('Value', 'N/A')}")
-                    print(f"Similarity Score: {node['similarity_score']:.4f}")
-            else:
-                print("\nNo semantic similarity results available for XML nodes.")
-
+run_evaluation('queries_dataset.csv', 'evaluation.csv')
